@@ -55,6 +55,9 @@ Panel {
   readonly property bool smoothTiles: Settings.smoothTiles(settings)
   readonly property bool showSnow: Settings.showSnow(settings)
   readonly property bool showLightning: Settings.showLightning(settings)
+  readonly property bool lightningAlertsEnabled: Settings.lightningAlertsEnabled(settings)
+  readonly property int lightningAlertRadiusMiles: Settings.lightningAlertRadiusMiles(settings)
+  readonly property var lightningRadiusPresets: Settings.lightningRadiusPresets(lightningAlertRadiusMiles)
   readonly property int colorSchemeId: Settings.colorSchemeId(settings)
 
   // The service is the authority on lead time whenever it is mounted; the
@@ -841,6 +844,8 @@ Panel {
           alertRadiusKm: root.alertRadiusKm
 
           showLightning: root.showLightning
+          lightningAlertsEnabled: root.lightningAlertsEnabled
+          lightningAlertRadiusKm: root.lightningAlertRadiusMiles * 1.609344
           strikes: root.radar ? root.radar.strikes : []
           strikeRevision: root.radar ? root.radar.strikeRevision : 0
 
@@ -966,6 +971,20 @@ Panel {
           // chosen here.
           onRadiusChosen: function(km) { root.persistSetting("alertRadiusKm", km) }
           onThresholdChosen: function(name) { root.persistSetting("alertMinIntensity", name) }
+        }
+
+        PanelSeparator { width: parent.width }
+
+        LightningAlertControls {
+          width: parent.width
+          spacing: Style.space(12)
+          bar: root.bar
+          radar: root.radar
+          enabled_: root.lightningAlertsEnabled
+          radiusMiles: root.lightningAlertRadiusMiles
+          radiusPresets: root.lightningRadiusPresets
+          onToggled: root.persistSetting("lightningAlertsEnabled", !root.lightningAlertsEnabled)
+          onRadiusChosen: function(miles) { root.persistSetting("lightningAlertRadiusMiles", miles) }
         }
       }
     }

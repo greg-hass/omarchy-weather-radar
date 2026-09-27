@@ -101,6 +101,8 @@ Item {
   // Lightning strikes, each {latitude, longitude, time}, newest last. The
   // revision changes whenever the list does.
   property bool showLightning: true
+  property bool lightningAlertsEnabled: false
+  property real lightningAlertRadiusKm: 80
   property var strikes: []
   property int strikeRevision: 0
 
@@ -242,6 +244,21 @@ Item {
           border.width: 1
           visible: root.alertsEnabled && r > 6 && r < homeOverlay.width * 2
         }
+      }
+
+      // The lightning watch's reach, in the colour of a fresh strike.
+      Rectangle {
+        readonly property real r: TileMath.kmToPixels(
+          root.lightningAlertRadiusKm, root.homeLatitude, root.zoom)
+        x: homeOverlay.home.x - r
+        y: homeOverlay.home.y - r
+        width: r * 2
+        height: r * 2
+        radius: r
+        color: "transparent"
+        border.color: Qt.rgba(1, 0.88, 0.3, 0.6)
+        border.width: 1
+        visible: root.lightningAlertsEnabled && r > 6 && r < homeOverlay.width * 2
       }
 
       Rectangle {

@@ -27,6 +27,7 @@ const PROCESSES = [
   { id: "manifestProc", file: "Service.qml", collects: true, builder: "manifestCommand" },
   { id: "forecastProc", file: "Service.qml", collects: true, builder: "forecastCommand" },
   { id: "notifyProc", file: "Service.qml", collects: false, builder: null },
+  { id: "lightningNotifyProc", file: "Service.qml", collects: false, builder: null },
   // The radar tiles go to disk, not into the process. What is collected is
   // curl's own report, a line per tile in a format and with paths this plugin
   // chose, so its size is set here rather than by the server.
