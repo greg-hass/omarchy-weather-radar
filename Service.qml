@@ -1479,15 +1479,17 @@ Item {
     }
   }
 
-  onLightningWatchingChanged: {
+  onLightningWatchingChanged: resetLightningWatch()
+  onLightningAlertRadiusMilesChanged: resetLightningWatch()
+  // A new home is a new watch: strikes counted, and the quiet period after a
+  // notification, belong to the old one.
+  onLocationKeyChanged: resetLightningWatch()
+
+  function resetLightningWatch() {
     nearbyStrikes = []
+    nearestStrike = null
     lastLightningNotifyAt = 0
     lastLightningNotifyKm = 0
-    nearestStrike = null
-  }
-  onLightningAlertRadiusMilesChanged: {
-    nearbyStrikes = []
-    nearestStrike = null
   }
 
   function acquireLightning() {
@@ -1556,8 +1558,18 @@ Item {
   property real lastLightningNotifyAt: 0
   property real lastLightningNotifyKm: 0
 
+  // Ticks while watching so the count drops as strikes age out, not only
+  // when a new one arrives.
+  property real lightningClock: Date.now()
+  Timer {
+    interval: 30000
+    repeat: true
+    running: root.lightningWatching
+    onTriggered: root.lightningClock = Date.now()
+  }
+
   readonly property int nearbyStrikeCount: {
-    var cutoff = Date.now() - lightningCountWindowMs
+    var cutoff = lightningClock - lightningCountWindowMs
     return nearbyStrikes.filter(function(s) { return s.time >= cutoff }).length
   }
 
@@ -1575,6 +1587,7 @@ Item {
 
     var point = TileMath.compassPoint(TileMath.bearingDegrees(homeLat, homeLon, lat, lon))
     var strike = { latitude: lat, longitude: lon, time: t, km: km, point: point }
+    lightningClock = now
     var cutoff = now - lightningCountWindowMs
     var kept = nearbyStrikes.filter(function(s) { return s.time >= cutoff })
     kept.push(strike)
