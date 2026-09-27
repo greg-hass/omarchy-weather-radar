@@ -32,6 +32,10 @@ const PROCESSES = [
   // chose, so its size is set here rather than by the server.
   { id: "tileFetchProc", file: "Service.qml", collects: true, builder: "TileCache.fetchCommand" },
   { id: "tileCleanProc", file: "Service.qml", collects: false, builder: "TileCache.cleanCommand" },
+  // Read a line at a time rather than collected whole: each line is one
+  // strike of a few dozen bytes, written by tools/lightning-feed.py, and the
+  // service keeps a bounded number of them (lightningMaxStrikes).
+  { id: "lightningProc", file: "Service.qml", collects: false, builder: null },
   { id: "geocodeProc", file: "Panel.qml", collects: true, builder: "geocodingCommand" },
   { id: "locationSaveProc", file: "Panel.qml", collects: false, builder: null },
 ]

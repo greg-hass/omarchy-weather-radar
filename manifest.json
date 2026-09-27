@@ -5,7 +5,7 @@
   "version": "0.3.0",
   "author": "Eduardo Dalle Cort",
   "license": "MIT",
-  "description": "Live weather radar map in the Omarchy bar, with optional storm alerts for your location.",
+  "description": "Live weather radar map with real-time lightning in the Omarchy bar, with optional storm alerts for your location.",
   "kinds": [
     "service",
     "bar-widget"
@@ -28,7 +28,8 @@
       "defaultZoom": 7,
       "smoothTiles": true,
       "showSnow": true,
-      "showLabel": false
+      "showLabel": false,
+      "showLightning": true
     },
     "schema": [
       {
@@ -101,6 +102,13 @@
         "label": "Distinguish snow",
         "defaultValue": true,
         "description": "Colour snow separately from rain."
+      },
+      {
+        "key": "showLightning",
+        "type": "boolean",
+        "label": "Lightning strikes",
+        "defaultValue": true,
+        "description": "Draw real-time lightning from the Blitzortung.org network over the map, fading over twenty minutes. Streamed only while the map is open."
       },
       {
         "key": "showLabel",

@@ -54,6 +54,7 @@ Panel {
   readonly property var thresholdOptions: Alerts.THRESHOLD_OPTIONS
   readonly property bool smoothTiles: Settings.smoothTiles(settings)
   readonly property bool showSnow: Settings.showSnow(settings)
+  readonly property bool showLightning: Settings.showLightning(settings)
   readonly property int colorSchemeId: Settings.colorSchemeId(settings)
 
   // The service is the authority on lead time whenever it is mounted; the
@@ -517,6 +518,7 @@ Panel {
       root.radar.releaseManifest(root.tileOwner)
       root.manifestHeld = false
     }
+    root.syncLightning(false)
     root.controller.hide()
     setCenterHoverRevealSuppressed(false)
   }
@@ -534,7 +536,26 @@ Panel {
   // frames for a panel nobody has.
   Component.onDestruction: {
     if (manifestHeld && root.radar && root.radar.releaseManifest) root.radar.releaseManifest(root.tileOwner)
+    if (lightningHeld && root.radar && root.radar.releaseLightning) root.radar.releaseLightning()
   }
+
+  // The lightning feed runs while the map is open with strikes switched on,
+  // and follows the view so that strikes are kept around where it is looking.
+  property bool lightningHeld: false
+
+  function syncLightning(open) {
+    if (!root.radar || !root.radar.acquireLightning) return
+    var want = (open === undefined ? root.opened : open) && root.showLightning
+    if (want) root.radar.setLightningCenter(root.viewLatitude, root.viewLongitude)
+    if (want === lightningHeld) return
+    lightningHeld = want
+    if (want) root.radar.acquireLightning()
+    else root.radar.releaseLightning()
+  }
+
+  onShowLightningChanged: syncLightning()
+  onViewLatitudeChanged: if (lightningHeld) root.radar.setLightningCenter(viewLatitude, viewLongitude)
+  onViewLongitudeChanged: if (lightningHeld) root.radar.setLightningCenter(viewLatitude, viewLongitude)
 
   function onOpened() {
     // Opening is a question about now, so the view and the clock both start
@@ -554,6 +575,7 @@ Panel {
       root.radar.acquireManifest()
       manifestHeld = true
     }
+    syncLightning(true)
 
     // Opening the map is a request for current information, and the frames are
     // not the only thing that can have gone stale or started failing while it
@@ -604,7 +626,9 @@ Panel {
 
   // Credit for everything drawn on the map, in one place so it cannot fall out
   // of step with where the data actually comes from.
-  readonly property string attribution: "RainViewer · Natural Earth"
+  readonly property string attribution: showLightning
+    ? "RainViewer · Blitzortung.org · Natural Earth"
+    : "RainViewer · Natural Earth"
 
   function radarTileUrlA(z, x, y) { return root.radarTileUrlForTime(root.frameA, z, x, y) }
   function radarTileUrlB(z, x, y) { return root.radarTileUrlForTime(root.frameB, z, x, y) }
@@ -815,6 +839,10 @@ Panel {
           homeLongitude: root.homeLongitude
           alertsEnabled: root.alertsEnabled
           alertRadiusKm: root.alertRadiusKm
+
+          showLightning: root.showLightning
+          strikes: root.radar ? root.radar.strikes : []
+          strikeRevision: root.radar ? root.radar.strikeRevision : 0
 
           loading: root.frames.length === 0
           radarUnavailable: root.radar ? root.radar.frameFailures > 0 : false

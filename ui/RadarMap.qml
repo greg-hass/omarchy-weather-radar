@@ -98,6 +98,12 @@ Item {
   property bool alertsEnabled: false
   property int alertRadiusKm: 100
 
+  // Lightning strikes, each {latitude, longitude, time}, newest last. The
+  // revision changes whenever the list does.
+  property bool showLightning: true
+  property var strikes: []
+  property int strikeRevision: 0
+
   // Shown until the first manifest arrives, so an empty map during the first
   // second does not read as "no rain".
   property bool loading: false
@@ -185,6 +191,17 @@ Item {
       Behavior on opacity {
         NumberAnimation { duration: 380; easing.type: Easing.InOutQuad }
       }
+    }
+
+    // ---- Lightning -------------------------------------------------------
+    LightningLayer {
+      anchors.fill: parent
+      visible: root.showLightning
+      strikes: root.strikes
+      strikeRevision: root.strikeRevision
+      centerLatitude: root.centerLatitude
+      centerLongitude: root.centerLongitude
+      zoom: root.zoom
     }
 
     // ---- Alert rings and home marker ------------------------------------
